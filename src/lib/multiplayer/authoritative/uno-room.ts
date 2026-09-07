@@ -50,7 +50,6 @@ export type UnoRoomOptions = {
   maxPlayers?: number;
   minPlayers?: number;
   random?: UnoRandom;
-  /** Called for every event (broadcast roster/phase; view is per-player). */
   emit?: (event: UnoRoomEvent) => void;
 };
 
@@ -80,8 +79,8 @@ export class UnoRoom {
     return this.players.map((p) => ({ ...p }));
   }
 
-  /** Dispatch a client intent. Always validated server-side. */
-  dispatch(cmd: UnoRoomCommand): void {
+  /** Dispatch a client intent. Returns a stable validation error for HTTP callers. */
+  dispatch(cmd: UnoRoomCommand): string | null {
     try {
       switch (cmd.type) {
         case "join":
@@ -114,13 +113,14 @@ export class UnoRoom {
         default:
           this.fail(cmd, "Unknown command.");
       }
+      return null;
     } catch (err) {
       const message = err instanceof UnoRuleError || err instanceof Error ? err.message : "Action rejected.";
       this.emitFn({ type: "error", playerId: "playerId" in cmd ? cmd.playerId : undefined, message });
+      return message;
     }
   }
 
-  /** Per-player public view (hides other hands + draw pile contents). */
   viewFor(playerId: string): UnoPublicState | null {
     if (!this.game) return null;
     return publicUnoState(this.game, playerId);
@@ -147,15 +147,16 @@ export class UnoRoom {
   }
 
   private join(playerId: string, name: string): void {
-    if (this.phase !== "WAITING" && this.phase !== "READY") {
-      throw new UnoRuleError("This room is not accepting players.");
-    }
     const existing = this.players.find((p) => p.id === playerId);
     if (existing) {
       existing.connected = true;
       existing.name = name.trim() || existing.name;
       this.emitRoster();
+      this.emitViews();
       return;
+    }
+    if (this.phase !== "WAITING" && this.phase !== "READY") {
+      throw new UnoRuleError("This room is not accepting players.");
     }
     if (this.players.length >= this.maxPlayers) {
       throw new UnoRuleError("Room is full.");
