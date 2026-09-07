@@ -78,9 +78,12 @@ export function ModeChip({ children, active, onClick }: { children: ReactNode; a
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
-        "min-h-11 border px-4 font-display text-sm font-bold uppercase tracking-[0.16em] transition-colors duration-150",
-        active ? "border-danfo bg-danfo text-midnight" : "border-lane bg-transparent text-bone hover:border-danfo",
+        "min-h-11 border px-4 font-display text-sm font-bold uppercase tracking-[0.16em] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danfo",
+        active
+          ? "border-danfo bg-danfo text-midnight shadow-[0_0_0_2px_rgba(255,241,0,0.2)]"
+          : "border-lane bg-transparent text-bone hover:border-danfo",
       )}
     >
       {children}

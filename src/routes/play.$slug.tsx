@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { getGame } from "@/lib/games/catalog";
 import { Spark } from "@/components/brand/marks";
 import { Codenames } from "@/components/games/codenames/Codenames";
@@ -27,7 +27,22 @@ const VIEWS: Record<GameSlug, ComponentType> = {
   kahoot: Kahoot,
 };
 
+const ALIASES: Record<string, GameSlug> = {
+  "draw-it-out": "draw",
+  "truth-or-dare": "truth",
+};
+
 export const Route = createFileRoute("/play/$slug")({
+  beforeLoad: ({ params }) => {
+    const canonical = ALIASES[params.slug];
+    if (canonical) {
+      throw redirect({
+        to: "/play/$slug",
+        params: { slug: canonical },
+        replace: true,
+      });
+    }
+  },
   component: Play,
 });
 
@@ -40,11 +55,12 @@ function Play() {
       <div className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-midnight px-6 text-bone">
         <Spark className="size-16 text-danfo" />
         <p className="font-display text-4xl font-bold uppercase">That room is closed.</p>
-        <Link to="/" className="font-display text-sm font-bold uppercase tracking-[0.16em] text-danfo">
+        <a href="/play" className="font-display text-sm font-bold uppercase tracking-[0.16em] text-danfo">
           Back to the arcade
-        </Link>
+        </a>
       </div>
     );
   }
   return <View />;
 }
+import { redirect } from "@tanstack/react-router";

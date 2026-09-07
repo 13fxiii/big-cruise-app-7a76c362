@@ -4,10 +4,11 @@ import { LiveMark, Spark, Wordmark } from "@/components/brand/marks";
 import { CruiseBackground, type CruiseDensity } from "@/components/cruise/CruiseBackground";
 import { CruiseLoader } from "@/components/cruise/CruiseLoader";
 import { CruiseAvatar, CruiseModal, CruiseToastRack } from "@/components/cruise/CruiseUI";
+import { signOut } from "@/lib/auth/client";
 import { usePlayer } from "@/lib/games/player";
 import { cn } from "@/lib/utils";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, Disc3, Gamepad2, MoreHorizontal, ShoppingBag, UserRound } from "lucide-react";
+import { Bell, Disc3, Gamepad2, LogOut, MoreHorizontal, ShoppingBag, UserRound } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 
 const PRIMARY = [
@@ -35,6 +36,17 @@ export function CruiseHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const name = usePlayer((s) => s.name);
   const [more, setMore] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function handleSignOut() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await signOut();
+    } catch {
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <>
@@ -105,6 +117,15 @@ export function CruiseHeader() {
             </Link>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={() => void handleSignOut()}
+          disabled={loggingOut}
+          className="mt-4 flex min-h-12 w-full items-center gap-3 border-t border-lane pt-4 font-display text-lg font-bold uppercase tracking-[0.1em] text-bone transition-colors hover:text-danfo disabled:cursor-wait disabled:opacity-60"
+        >
+          <LogOut className="size-5" strokeWidth={1.8} />
+          {loggingOut ? "Logging out…" : "Log out"}
+        </button>
       </CruiseModal>
     </>
   );

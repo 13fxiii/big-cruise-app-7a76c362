@@ -89,6 +89,10 @@ export function SitDown({
             </ModeChip>
           ) : null}
         </div>
+        <p className="mt-3 border-l-2 border-danfo pl-3 text-sm text-bone/75" aria-live="polite">
+          Selected: <span className="font-bold text-danfo">{mode === "bots" ? "Vs bots" : mode === "pass" ? "Pass the phone" : "Cruise room"}</span>.
+          {mode === "online" ? " Host a room or enter a code below." : " Tap Sit down to start."}
+        </p>
       </div>
 
       {mode !== "online" && max > min ? (
@@ -143,13 +147,18 @@ export function SitDown({
         onClick={() => {
           playIf(muted, sfx.play);
           const joining = mode === "online" && join.length === 4;
-          recordPlay(game.slug, mode === "online" && !joining);
+          // Enter the table first so a telemetry/RPC failure cannot block gameplay.
           onStart({
             mode,
             room: joining ? join : hostCode,
             seats,
             joining,
           });
+          try {
+            recordPlay(game.slug, mode === "online" && !joining);
+          } catch {
+            /* local identity is optional at sit-down */
+          }
         }}
       >
         Sit down

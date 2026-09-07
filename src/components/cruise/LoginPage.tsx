@@ -25,20 +25,16 @@ export function LoginPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
-        const { error: err } = await authClient.signUp.email({
+        await authClient.signUp.email({
           name: name.trim() || email.split("@")[0],
           email: email.trim().toLowerCase(),
           password,
-          callbackURL: "/",
         });
-        if (err) throw new Error(err.message ?? "Sign up failed");
       } else {
-        const { error: err } = await authClient.signIn.email({
+        await authClient.signIn.email({
           email: email.trim().toLowerCase(),
           password,
-          callbackURL: "/",
         });
-        if (err) throw new Error(err.message ?? "Sign in failed");
       }
       window.location.assign("/");
     } catch (err) {
@@ -61,7 +57,7 @@ export function LoginPage() {
           {mode === "signup" ? "Get a seat." : "You are here."}
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-bone/75">
-          Email is the door. No X login. No API bill. Same identity across Game Room, Spaces, and ID.
+          Email is the door. No X login. No API bill. Same identity across Game Room and BIG CRUISE ID.
         </p>
 
         {!authEnabled ? (

@@ -2,6 +2,7 @@
 
 import { CruiseShell } from "@/components/cruise/CruiseShell";
 import { CruisePlayerCard } from "@/components/cruise/CruiseUI";
+import { WeeklyTheme } from "@/components/cruise/WeeklyTheme";
 import { GAMES, type GameSlug } from "@/lib/games/catalog";
 import { sfx } from "@/lib/games/audio";
 import { playIf, usePlayer } from "@/lib/games/player";
@@ -51,6 +52,8 @@ export function Arcade() {
         </div>
       </section>
 
+      <WeeklyTheme compact />
+
       {recentGames.length ? (
         <section className="px-4 pb-3">
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4">
@@ -84,7 +87,7 @@ export function Arcade() {
               to="/play/$slug"
               params={{ slug: g.slug }}
               onClick={() => playIf(muted, sfx.tap)}
-              className="group relative flex min-h-[148px] flex-col justify-between bg-midnight p-3 active:bg-asphalt sm:min-h-[180px] sm:p-4"
+              className="group relative flex min-h-[148px] flex-col justify-between overflow-hidden bg-midnight p-3 active:bg-asphalt sm:min-h-[180px] sm:p-4"
             >
               <div className="pointer-events-none absolute -right-4 -top-4 size-16 opacity-20" style={{ color: g.accent }}>
                 {Icon ? <Icon className="size-full" strokeWidth={1.2} /> : null}

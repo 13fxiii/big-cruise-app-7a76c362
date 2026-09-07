@@ -2,6 +2,7 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CruiseShell } from "@/components/cruise/CruiseShell";
+import { WeeklyTheme } from "@/components/cruise/WeeklyTheme";
 import { Gamepad2, MoreHorizontal, ShoppingBag, UserRound } from "lucide-react";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -31,6 +32,7 @@ function Home() {
           );
         })}
       </div>
+      <WeeklyTheme />
     </CruiseShell>
   );
 }

@@ -17,10 +17,12 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as MerchRouteImport } from './routes/merch'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as RewardsRouteImport } from './routes/rewards'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SpacesRouteImport } from './routes/spaces'
 import { Route as ApiRtcRouteImport } from './routes/api/rtc'
+import { Route as PlayIndexRouteImport } from './routes/play.index'
 import { Route as PlaySlugRouteImport } from './routes/play.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -63,6 +65,11 @@ const NotificationsRoute = NotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RewardsRoute = RewardsRouteImport.update({
   id: '/rewards',
   path: '/rewards',
@@ -83,6 +90,11 @@ const ApiRtcRoute = ApiRtcRouteImport.update({
   path: '/api/rtc',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlayIndexRoute = PlayIndexRouteImport.update({
+  id: '/play/',
+  path: '/play/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlaySlugRoute = PlaySlugRouteImport.update({
   id: '/play/$slug',
   path: '/play/$slug',
@@ -98,11 +110,13 @@ export interface FileRoutesByFullPath {
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
   '/rewards': typeof RewardsRoute
   '/settings': typeof SettingsRoute
   '/spaces': typeof SpacesRoute
   '/api/rtc': typeof ApiRtcRoute
   '/play/$slug': typeof PlaySlugRoute
+  '/play/': typeof PlayIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -113,11 +127,13 @@ export interface FileRoutesByTo {
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
   '/rewards': typeof RewardsRoute
   '/settings': typeof SettingsRoute
   '/spaces': typeof SpacesRoute
   '/api/rtc': typeof ApiRtcRoute
   '/play/$slug': typeof PlaySlugRoute
+  '/play': typeof PlayIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -129,11 +145,13 @@ export interface FileRoutesById {
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
   '/rewards': typeof RewardsRoute
   '/settings': typeof SettingsRoute
   '/spaces': typeof SpacesRoute
   '/api/rtc': typeof ApiRtcRoute
   '/play/$slug': typeof PlaySlugRoute
+  '/play/': typeof PlayIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -146,11 +164,13 @@ export interface FileRouteTypes {
     | '/merch'
     | '/music'
     | '/notifications'
+    | '/profile'
     | '/rewards'
     | '/settings'
     | '/spaces'
     | '/api/rtc'
     | '/play/$slug'
+    | '/play/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -161,11 +181,13 @@ export interface FileRouteTypes {
     | '/merch'
     | '/music'
     | '/notifications'
+    | '/profile'
     | '/rewards'
     | '/settings'
     | '/spaces'
     | '/api/rtc'
     | '/play/$slug'
+    | '/play'
   id:
     | '__root__'
     | '/'
@@ -176,11 +198,13 @@ export interface FileRouteTypes {
     | '/merch'
     | '/music'
     | '/notifications'
+    | '/profile'
     | '/rewards'
     | '/settings'
     | '/spaces'
     | '/api/rtc'
     | '/play/$slug'
+    | '/play/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -192,11 +216,13 @@ export interface RootRouteChildren {
   MerchRoute: typeof MerchRoute
   MusicRoute: typeof MusicRoute
   NotificationsRoute: typeof NotificationsRoute
+  ProfileRoute: typeof ProfileRoute
   RewardsRoute: typeof RewardsRoute
   SettingsRoute: typeof SettingsRoute
   SpacesRoute: typeof SpacesRoute
   ApiRtcRoute: typeof ApiRtcRoute
   PlaySlugRoute: typeof PlaySlugRoute
+  PlayIndexRoute: typeof PlayIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -257,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rewards': {
       id: '/rewards'
       path: '/rewards'
@@ -285,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRtcRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/play/': {
+      id: '/play/'
+      path: '/play'
+      fullPath: '/play/'
+      preLoaderRoute: typeof PlayIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/play/$slug': {
       id: '/play/$slug'
       path: '/play/$slug'
@@ -304,11 +344,13 @@ const rootRouteChildren: RootRouteChildren = {
   MerchRoute: MerchRoute,
   MusicRoute: MusicRoute,
   NotificationsRoute: NotificationsRoute,
+  ProfileRoute: ProfileRoute,
   RewardsRoute: RewardsRoute,
   SettingsRoute: SettingsRoute,
   SpacesRoute: SpacesRoute,
   ApiRtcRoute: ApiRtcRoute,
   PlaySlugRoute: PlaySlugRoute,
+  PlayIndexRoute: PlayIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

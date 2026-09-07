@@ -1,0 +1,22 @@
+name: BIG CRUISE runner canary
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - supabase-auth-single-source
+
+permissions:
+  contents: read
+
+jobs:
+  canary:
+    name: Hosted runner canary
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Verify runner
+        run: |
+          echo "BIG_CRUISE_RUNNER_OK"
+          uname -a
+          node --version

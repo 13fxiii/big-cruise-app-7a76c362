@@ -286,7 +286,7 @@ export function SettingsPage() {
     <CruisePage
       kicker="Settings"
       title="The room, on your terms."
-      lede="Name, handle, portrait, one line. No account wall. Auth stays off until the product actually needs it."
+      lede="Update your name, handle, portrait, and one-line bio. Your signed-in account controls access; profile syncing is the next persistence step."
     >
       <div className="grid max-w-xl gap-6">
         <label className="block">
@@ -344,7 +344,7 @@ export function SettingsPage() {
         <CruiseCard>
           <CruiseLocalStamp />
           <p className="mt-2 font-mono text-xl tracking-[0.2em] text-danfo">{cruiseId}</p>
-          <p className="mt-3 text-sm leading-relaxed text-concrete">{PERSISTENCE.note}</p>
+          <p className="mt-3 text-sm leading-relaxed text-concrete">Your BIG CRUISE ID stays attached to this profile.</p>
         </CruiseCard>
         <CruiseButton variant="line" onClick={toggleMute} className="justify-start">
           {muted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
