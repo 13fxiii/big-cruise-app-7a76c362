@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - supabase-auth-single-source
+      - main
 
 permissions:
   contents: read
@@ -12,7 +13,7 @@ permissions:
 jobs:
   canary:
     name: Hosted runner canary
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Verify runner
