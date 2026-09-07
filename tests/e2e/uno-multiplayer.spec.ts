@@ -32,23 +32,19 @@ test.describe('UNO authenticated multiplayer', () => {
     try {
       const pageA = await openRoom(contextA, emailA!, passwordA!, room);
       const pageB = await openRoom(contextB, emailB!, passwordB!, room);
-
       await expect(pageA.getByText(/2 players · host/i)).toBeVisible({ timeout: 10000 });
       await expect(pageB.getByText(/2 players · player/i)).toBeVisible({ timeout: 10000 });
-
       await pageA.getByRole('button', { name: 'Ready' }).click();
       await pageB.getByRole('button', { name: 'Ready' }).click();
       await expect(pageA.getByText('READY', { exact: true }).first()).toBeVisible({ timeout: 10000 });
       await expect(pageB.getByText('READY', { exact: true }).first()).toBeVisible({ timeout: 10000 });
-
       await pageA.getByRole('button', { name: 'Start game' }).click();
       await expect(pageA.getByText('PLAYING', { exact: true })).toBeVisible({ timeout: 10000 });
       await expect(pageB.getByText('PLAYING', { exact: true })).toBeVisible({ timeout: 10000 });
-
-      await expect(pageA.locator('button[aria-label^="UNO "]').count()).toBeGreaterThan(0);
-      await expect(pageB.locator('button[aria-label^="UNO "]').count()).toBeGreaterThan(0);
-      await expect(pageA.getByLabel('Hidden UNO card').count()).toBeGreaterThan(0);
-      await expect(pageB.getByLabel('Hidden UNO card').count()).toBeGreaterThan(0);
+      await expect(pageA.locator('button[aria-label^="UNO "]')).toHaveCount(7, { timeout: 10000 });
+      await expect(pageB.locator('button[aria-label^="UNO "]')).toHaveCount(7, { timeout: 10000 });
+      await expect(pageA.getByLabel('Hidden UNO card')).toHaveCount(7, { timeout: 10000 });
+      await expect(pageB.getByLabel('Hidden UNO card')).toHaveCount(7, { timeout: 10000 });
     } finally {
       await contextA.close();
       await contextB.close();
