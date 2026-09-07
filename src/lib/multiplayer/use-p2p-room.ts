@@ -1,6 +1,7 @@
 /**
- * React binding for P2PRoom. Identity and room id are captured once on mount
- * so re-renders never tear down the mesh. Changing room/name requires a remount.
+ * Binding for P2PRoom.
+ * Room and enablement are reactive: when a table sits down into an online
+ * room, the mesh joins that room. Offline / bot tables never join.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { P2PRoom, type PeerInfo } from "./p2p";
@@ -32,8 +33,8 @@ function defaultRoom(): string {
 export function useP2PRoom(options: UseP2PRoomOptions = {}): P2PRoomHandle {
   const enabled = options.enabled !== false;
   const [selfId] = useState(() => `p-${Math.random().toString(36).slice(2, 10)}`);
-  const [room] = useState(() => options.room ?? defaultRoom());
-  const [name] = useState(() => options.name ?? selfId);
+  const room = enabled ? (options.room ?? defaultRoom()) : "";
+  const name = options.name?.trim() || selfId;
   const [peers, setPeers] = useState<PeerInfo[]>([]);
   const [joined, setJoined] = useState(false);
   const roomRef = useRef<P2PRoom | null>(null);
@@ -42,7 +43,11 @@ export function useP2PRoom(options: UseP2PRoomOptions = {}): P2PRoomHandle {
   );
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !room) {
+      setJoined(false);
+      setPeers([]);
+      return;
+    }
     const p2p = new P2PRoom({
       room,
       selfId,
@@ -54,10 +59,13 @@ export function useP2PRoom(options: UseP2PRoomOptions = {}): P2PRoomHandle {
       onConnected: () => setJoined(true),
     });
     roomRef.current = p2p;
+    setJoined(false);
     void p2p.join();
     return () => {
       roomRef.current = null;
       p2p.close();
+      setJoined(false);
+      setPeers([]);
     };
   }, [room, selfId, name, enabled]);
 

@@ -147,13 +147,18 @@ export function SitDown({
         onClick={() => {
           playIf(muted, sfx.play);
           const joining = mode === "online" && join.length === 4;
-          recordPlay(game.slug, mode === "online" && !joining);
+          // Enter the table first so a telemetry/RPC failure cannot block gameplay.
           onStart({
             mode,
             room: joining ? join : hostCode,
             seats,
             joining,
           });
+          try {
+            recordPlay(game.slug, mode === "online" && !joining);
+          } catch {
+            /* local identity is optional at sit-down */
+          }
         }}
       >
         Sit down

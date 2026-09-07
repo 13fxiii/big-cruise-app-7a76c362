@@ -36,6 +36,7 @@ test.describe('BIG CRUISE launch regressions', () => {
     await page.getByRole('button', { name: 'Pass the phone' }).click();
     await expect(page.getByText('Selected: Pass the phone.')).toBeVisible();
     await page.getByRole('button', { name: 'Sit down' }).click();
+    await expect(page.getByRole('button', { name: 'Sit down' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Pass' })).toBeVisible();
   });
 
@@ -44,6 +45,24 @@ test.describe('BIG CRUISE launch regressions', () => {
       await page.goto(`/play/${slug}`);
       await expect(page.locator('body')).not.toContainText('That room is closed.');
       await expect(page.getByRole('button', { name: 'Sit down' })).toBeVisible();
+    }
+  });
+
+  test('every canonical game can leave Sit Down into active play', async ({ page }) => {
+    for (const slug of games) {
+      await page.goto(`/play/${slug}`);
+      const sit = page.getByRole('button', { name: 'Sit down' });
+      await expect(sit).toBeVisible();
+      // Prefer offline modes so the entry test does not depend on P2P peers.
+      const bots = page.getByRole('button', { name: 'Vs bots' });
+      const pass = page.getByRole('button', { name: 'Pass the phone' });
+      if (await bots.count()) {
+        await bots.click();
+      } else if (await pass.count()) {
+        await pass.click();
+      }
+      await sit.click();
+      await expect(sit, `Sit down stuck on /play/${slug}`).toHaveCount(0, { timeout: 8000 });
     }
   });
 
