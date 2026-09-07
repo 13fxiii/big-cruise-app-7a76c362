@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { callUno, canPlay, createUnoGame, drawCards, playCard, publicUnoState, UnoRuleError } from "./uno.ts";
+import {
+  callUno,
+  canPlay,
+  createUnoGame,
+  drawCards,
+  playCard,
+  publicUnoState,
+  UnoRuleError,
+} from "./uno.ts";
 
 test("creates a standard UNO room with private hands", () => {
   const state = createUnoGame(
@@ -13,8 +21,21 @@ test("creates a standard UNO room with private hands", () => {
   assert.equal(state.players.length, 2);
   assert.equal(state.players[0].hand.length, 7);
   assert.equal(state.players[1].hand.length, 7);
-  assert.equal(state.drawPile.length + state.discardPile.length + state.players.reduce((sum, p) => sum + p.hand.length, 0), 108);
-  assert.equal(publicUnoState(state, "a").players[1].hand.every((card) => card.id === "hidden"), true);
+  assert.equal(
+    state.drawPile.length + state.discardPile.length + state.players.reduce((sum, p) => sum + p.hand.length, 0),
+    108,
+  );
+  const pub = publicUnoState(state, "a");
+  assert.equal(pub.players[1].hand.every((card) => card.id === "hidden"), true);
+  assert.equal(pub.drawPileCount, state.drawPile.length);
+  assert.equal("drawPile" in pub, false);
+});
+
+test("rejects opening hands that cannot fit the deck", () => {
+  assert.throws(
+    () => createUnoGame([{ id: "a", name: "Ada" }, { id: "b", name: "Bola" }], () => 0.1, 60),
+    UnoRuleError,
+  );
 });
 
 test("validates matching cards and advances after play", () => {
@@ -44,6 +65,20 @@ test("draws a pending draw-two penalty and advances", () => {
   drawCards(state, "b");
   assert.equal(state.players[1].hand.length, before + 2);
   assert.equal(state.currentPlayer, 0);
+});
+
+test("wild draw four applies a four-card penalty", () => {
+  const state = createUnoGame([{ id: "a", name: "Ada" }, { id: "b", name: "Bola" }], () => 0.3, 1);
+  state.players[0].hand = [
+    { id: "w4", kind: "wild", action: "wild4" },
+    { id: "spare-a", kind: "number", color: "green", value: 2 },
+    { id: "spare-b", kind: "number", color: "yellow", value: 3 },
+  ];
+  state.discardPile = [{ id: "top", kind: "number", color: "red", value: 5 }];
+  playCard(state, "a", "w4", "blue");
+  assert.equal(state.pendingDraw, 4);
+  assert.equal(state.discardPile.at(-1)?.color, "blue");
+  assert.equal(state.currentPlayer, 1);
 });
 
 test("requires a declared color for wild cards", () => {
