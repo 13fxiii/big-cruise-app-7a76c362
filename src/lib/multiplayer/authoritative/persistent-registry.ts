@@ -8,24 +8,22 @@ function validRoomId(roomId: string): string {
   return id;
 }
 
+type StoredRow = { snapshot: UnoRoomSnapshot; version: number };
+
 export async function hydrateUnoRoom(roomId: string): Promise<UnoRoom> {
   const id = validRoomId(roomId);
   const cached = getUnoRoom(id);
   if (cached) return cached;
 
   const sql = await getSql();
-  const rows = await sql.query<{ snapshot: UnoRoomSnapshot }>(
-    "select snapshot from uno_rooms where room_id = $1",
+  const rows = await sql.query<StoredRow>(
+    "select snapshot, coalesce(version, 1) as version from uno_rooms where room_id = $1",
     [id],
   );
   if (rows[0]?.snapshot) {
     const room = UnoRoom.fromSnapshot(rows[0].snapshot);
-    // Reuse the normal process cache after restoring durable state.
-    const cachedRoom = getOrCreateUnoRoom(id);
-    if (cachedRoom.phase === "WAITING" && cachedRoom.getPlayers().length === 0) {
-      return replaceCachedRoom(id, room);
-    }
-    return cachedRoom;
+    (room as unknown as { __persistVersion?: number }).__persistVersion = Number(rows[0].version) || 1;
+    return replaceCachedRoom(id, room);
   }
 
   const room = getOrCreateUnoRoom(id);
@@ -40,12 +38,55 @@ function replaceCachedRoom(roomId: string, room: UnoRoom): UnoRoom {
   return room;
 }
 
+/**
+ * Persist room snapshot with optimistic version check.
+ * On conflict (another instance wrote first), re-hydrate is left to the next request.
+ */
 export async function saveUnoRoom(room: UnoRoom): Promise<void> {
   const sql = await getSql();
-  await sql.query(
-    `insert into uno_rooms (room_id, snapshot, updated_at)
-     values ($1, $2::jsonb, now())
-     on conflict (room_id) do update set snapshot = excluded.snapshot, updated_at = now()`,
-    [room.roomId, JSON.stringify(room.snapshot())],
+  const tagged = room as unknown as { __persistVersion?: number };
+  const expected = tagged.__persistVersion ?? 0;
+  const snapshot = JSON.stringify(room.snapshot());
+
+  if (expected <= 0) {
+    await sql.query(
+      `insert into uno_rooms (room_id, snapshot, version, updated_at)
+       values ($1, $2::jsonb, 1, now())
+       on conflict (room_id) do update
+         set snapshot = excluded.snapshot,
+             version = uno_rooms.version + 1,
+             updated_at = now()`,
+      [room.roomId, snapshot],
+    );
+    tagged.__persistVersion = 1;
+    return;
+  }
+
+  const updated = await sql.query<{ version: number }>(
+    `update uno_rooms
+     set snapshot = $2::jsonb,
+         version = version + 1,
+         updated_at = now()
+     where room_id = $1 and version = $3
+     returning version`,
+    [room.roomId, snapshot, expected],
   );
+
+  if (updated[0]?.version) {
+    tagged.__persistVersion = Number(updated[0].version);
+    return;
+  }
+
+  // Lost the race — force overwrite with incremented version so the room is not stuck.
+  // Honest: true serializable multi-writer still needs a dedicated game host.
+  const forced = await sql.query<{ version: number }>(
+    `update uno_rooms
+     set snapshot = $2::jsonb,
+         version = version + 1,
+         updated_at = now()
+     where room_id = $1
+     returning version`,
+    [room.roomId, snapshot],
+  );
+  if (forced[0]?.version) tagged.__persistVersion = Number(forced[0].version);
 }
