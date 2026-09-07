@@ -74,9 +74,15 @@ test("invalid play and wrong turn rejected", () => {
   assert.ok(c.errors().some((e) => /not in your hand/i.test(e.message)));
 });
 
+test("dispatch returns the validation error for HTTP callers", () => {
+  const room = new UnoRoom({ roomId: "T5", random: () => 0.3 });
+  const error = room.dispatch({ type: "start", playerId: "missing" });
+  assert.equal(error, "Only the host can start.");
+});
+
 test("client cannot declare itself winner — only engine can", () => {
   const c = collect();
-  const room = new UnoRoom({ roomId: "T5", emit: c.emit, random: () => 0.3 });
+  const room = new UnoRoom({ roomId: "T6", emit: c.emit, random: () => 0.3 });
   room.dispatch({ type: "join", playerId: "a", name: "Ada" });
   room.dispatch({ type: "join", playerId: "b", name: "Bola" });
   room.dispatch({ type: "ready", playerId: "a", ready: true });
@@ -88,7 +94,7 @@ test("client cannot declare itself winner — only engine can", () => {
 });
 
 test("reconnect marks connected without duplicating seat", () => {
-  const room = new UnoRoom({ roomId: "T6", random: () => 0.3 });
+  const room = new UnoRoom({ roomId: "T7", random: () => 0.3 });
   room.dispatch({ type: "join", playerId: "a", name: "Ada" });
   room.dispatch({ type: "join", playerId: "b", name: "Bola" });
   room.dispatch({ type: "leave", playerId: "b" });
@@ -98,4 +104,20 @@ test("reconnect marks connected without duplicating seat", () => {
   room.dispatch({ type: "join", playerId: "b", name: "Bola2" });
   assert.equal(room.getPlayers().filter((p) => p.id === "b").length, 1);
   assert.equal(room.getPlayers().find((p) => p.id === "b")?.name, "Bola2");
+});
+
+test("reconnect during PLAYING restores the same seat", () => {
+  const room = new UnoRoom({ roomId: "T8", random: () => 0.3 });
+  room.dispatch({ type: "join", playerId: "a", name: "Ada" });
+  room.dispatch({ type: "join", playerId: "b", name: "Bola" });
+  room.dispatch({ type: "ready", playerId: "a", ready: true });
+  room.dispatch({ type: "ready", playerId: "b", ready: true });
+  room.dispatch({ type: "start", playerId: "a" });
+  room.dispatch({ type: "leave", playerId: "b" });
+  assert.equal(room.getPlayers().find((p) => p.id === "b")?.connected, false);
+  room.dispatch({ type: "join", playerId: "b", name: "Bola" });
+  const b = room.getPlayers().find((p) => p.id === "b")!;
+  assert.equal(room.phase, "PLAYING");
+  assert.equal(b.connected, true);
+  assert.equal(b.seat, 1);
 });
