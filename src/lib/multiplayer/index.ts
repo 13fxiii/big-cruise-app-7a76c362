@@ -14,3 +14,7 @@ export type { GameRoomHandle } from "./use-game-room";
 export { useOnlineSnap } from "./use-online-snap";
 export { isRoomPacket } from "./protocol";
 export type { RoomPacket, RoomSnapshot, RoomAction, GameSlugWire } from "./protocol";
+export type { GameTransport, TransportConnectionState, TransportPlayer, TransportMessage } from "./transport";
+export { NullTransport } from "./transport";
+export { UnoRoom } from "./authoritative/uno-room";
+export type { UnoRoomCommand, UnoRoomEvent, UnoRoomPhase, UnoRoomPlayer, UnoRoomOptions } from "./authoritative/uno-room";
