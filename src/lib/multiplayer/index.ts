@@ -18,3 +18,5 @@ export type { GameTransport, TransportConnectionState, TransportPlayer, Transpor
 export { NullTransport } from "./transport";
 export { UnoRoom } from "./authoritative/uno-room";
 export type { UnoRoomCommand, UnoRoomEvent, UnoRoomPhase, UnoRoomPlayer, UnoRoomOptions } from "./authoritative/uno-room";
+export { createLocalUnoClient, createRemoteUnoClient } from "./uno-client";
+export type { UnoClient, UnoClientSnapshot } from "./uno-client";
