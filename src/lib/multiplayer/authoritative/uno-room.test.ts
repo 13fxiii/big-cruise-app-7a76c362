@@ -121,3 +121,19 @@ test("reconnect during PLAYING restores the same seat", () => {
   assert.equal(b.connected, true);
   assert.equal(b.seat, 1);
 });
+
+test("room snapshot round-trips a live game without exposing hidden cards", () => {
+  const room = new UnoRoom({ roomId: "T9", random: () => 0.3 });
+  room.dispatch({ type: "join", playerId: "a", name: "Ada" });
+  room.dispatch({ type: "join", playerId: "b", name: "Bola" });
+  room.dispatch({ type: "ready", playerId: "a", ready: true });
+  room.dispatch({ type: "ready", playerId: "b", ready: true });
+  room.dispatch({ type: "start", playerId: "a" });
+  const snapshot = room.snapshot();
+  const restored = UnoRoom.fromSnapshot(snapshot);
+  assert.equal(restored.roomId, room.roomId);
+  assert.equal(restored.phase, "PLAYING");
+  assert.deepEqual(restored.getPlayers(), room.getPlayers());
+  assert.deepEqual(restored.viewFor("a"), room.viewFor("a"));
+  assert.deepEqual(restored.viewFor("b"), room.viewFor("b"));
+});
